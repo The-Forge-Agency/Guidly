@@ -4,10 +4,12 @@ namespace Database\Seeders;
 
 use App\Enums\ActionType;
 use App\Enums\ConditionType;
+use App\Enums\GuideStatus;
 use App\Enums\MediaType;
 use App\Models\Guide;
 use App\Models\Step;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class DemoGuideSeeder extends Seeder
 {
@@ -17,12 +19,18 @@ class DemoGuideSeeder extends Seeder
             return;
         }
 
-        $bellecour = Guide::factory()->published()->create([
+        $bellecour = Guide::create([
             'title' => 'Check-in — Appartement Bellecour, Lyon 2e',
             'description' => 'Toutes les infos pour votre arrivée dans l\'appartement. Bienvenue à Lyon !',
             'slug' => 'bellecour',
+            'edit_token' => Str::random(32),
             'creator_email' => 'sophie@guidly.app',
+            'creator_cookie' => (string) Str::uuid(),
+            'creator_ip' => '127.0.0.1',
             'cover_image_path' => 'images/demo/cover-bellecour.png',
+            'status' => GuideStatus::Published,
+            'published_at' => now(),
+            'require_completion' => true,
         ]);
 
         $steps = [
