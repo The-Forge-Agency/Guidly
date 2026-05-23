@@ -7,15 +7,16 @@ use App\Enums\ConditionType;
 use App\Enums\MediaType;
 use App\Models\Guide;
 use App\Models\Step;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class DatabaseSeeder extends Seeder
+class DemoGuideSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     public function run(): void
     {
+        if (Guide::where('slug', 'bellecour')->exists()) {
+            return;
+        }
+
         $bellecour = Guide::factory()->published()->create([
             'title' => 'Check-in — Appartement Bellecour, Lyon 2e',
             'description' => 'Toutes les infos pour votre arrivée dans l\'appartement. Bienvenue à Lyon !',
@@ -24,7 +25,7 @@ class DatabaseSeeder extends Seeder
             'cover_image_path' => 'images/demo/cover-bellecour.png',
         ]);
 
-        $bellecourSteps = [
+        $steps = [
             [
                 'title' => 'Trouver l\'immeuble',
                 'content_html' => '<p>L\'appartement se situe <strong>Place Bellecour</strong>, côté sud, au <strong>12 rue de la Charité, Lyon 2e</strong>.</p><p>Depuis la place Bellecour, prenez la rue de la Charité direction sud. L\'immeuble est à 50 mètres sur votre droite — façade en pierre beige avec une grande porte en bois.</p><p>Repère : il y a une boulangerie juste en face.</p>',
@@ -98,7 +99,7 @@ class DatabaseSeeder extends Seeder
             ],
         ];
 
-        foreach ($bellecourSteps as $stepData) {
+        foreach ($steps as $stepData) {
             Step::create(array_merge($stepData, ['guide_id' => $bellecour->id]));
         }
     }
