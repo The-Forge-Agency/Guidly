@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('description')->nullable();
-            $table->string('slug', 8)->unique();
+            $table->string('slug', 16)->unique();
             $table->string('edit_token', 32)->unique();
             $table->string('creator_email')->nullable();
             $table->string('creator_cookie');
