@@ -17,6 +17,10 @@ class ReaderController extends Controller
 
     private const COOKIE_LIFETIME = 525960;
 
+    private const DEMO_COOKIE_PREFIX = 'guidly_demo_';
+
+    private const DEMO_COOKIE_LIFETIME = 60;
+
     public function show(Request $request, string $slug): Response
     {
         $guide = Guide::published()->where('slug', $slug)->firstOrFail();
@@ -25,11 +29,13 @@ class ReaderController extends Controller
         $isDemo = $guide->slug === 'bellecour';
 
         if ($isDemo) {
-            $sessionKey = "guidly_reader_{$guide->id}";
-            $readerToken = $request->session()->get($sessionKey);
-            if (! $readerToken) {
+            $demoCookieName = self::DEMO_COOKIE_PREFIX.$guide->slug;
+            $forceRestart = $request->boolean('restart');
+
+            if ($forceRestart) {
                 $readerToken = (string) Str::uuid();
-                $request->session()->put($sessionKey, $readerToken);
+            } else {
+                $readerToken = $request->cookie($demoCookieName) ?? (string) Str::uuid();
             }
         } else {
             $readerToken = $request->cookie(self::COOKIE_NAME) ?? (string) Str::uuid();
@@ -50,8 +56,8 @@ class ReaderController extends Controller
         ]);
 
         if ($isDemo) {
+            $response->withCookie(cookie($demoCookieName, $readerToken, self::DEMO_COOKIE_LIFETIME));
             $response->withCookie(cookie()->forget(self::COOKIE_NAME));
-            $response->header('Cache-Control', 'no-store');
         } elseif (! $request->cookie(self::COOKIE_NAME)) {
             $response->withCookie(cookie(self::COOKIE_NAME, $readerToken, self::COOKIE_LIFETIME));
         }
@@ -98,18 +104,6 @@ class ReaderController extends Controller
             'is_guide_complete' => $isGuideComplete,
             'next_step_id' => $nextStep?->id,
         ]);
-    }
-
-    public function restart(Request $request, string $slug): Response
-    {
-        $guide = Guide::published()->where('slug', $slug)->firstOrFail();
-
-        $sessionKey = "guidly_reader_{$guide->id}";
-        $request->session()->forget($sessionKey);
-
-        return redirect()->route('reader.show', $slug)
-            ->withCookie(cookie()->forget(self::COOKIE_NAME))
-            ->header('Cache-Control', 'no-store');
     }
 
     public function uploadAction(Request $request, string $slug, Step $step): JsonResponse
@@ -161,7 +155,7 @@ class ReaderController extends Controller
     private function getReaderToken(Request $request, Guide $guide): ?string
     {
         if ($guide->slug === 'bellecour') {
-            return $request->session()->get("guidly_reader_{$guide->id}");
+            return $request->cookie(self::DEMO_COOKIE_PREFIX.$guide->slug);
         }
 
         return $request->cookie(self::COOKIE_NAME);

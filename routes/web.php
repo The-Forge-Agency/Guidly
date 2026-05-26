@@ -27,7 +27,6 @@ Route::prefix('/guide/{edit_token}')->group(function () {
 });
 
 Route::get('/g/{slug}', [ReaderController::class, 'show'])->name('reader.show');
-Route::post('/g/{slug}/restart', [ReaderController::class, 'restart'])->name('reader.restart');
 Route::post('/g/{slug}/step/{step}/complete', [ReaderController::class, 'completeStep'])->name('reader.complete');
 Route::post('/g/{slug}/step/{step}/upload', [ReaderController::class, 'uploadAction'])->name('reader.upload');
 
