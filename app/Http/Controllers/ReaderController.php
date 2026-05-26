@@ -30,13 +30,14 @@ class ReaderController extends Controller
 
         if ($isDemo) {
             $demoCookieName = self::DEMO_COOKIE_PREFIX.$guide->slug;
-            $forceRestart = $request->boolean('restart');
 
-            if ($forceRestart) {
-                $readerToken = (string) Str::uuid();
-            } else {
-                $readerToken = $request->cookie($demoCookieName) ?? (string) Str::uuid();
+            if ($request->boolean('restart')) {
+                return redirect()->route('reader.show', $slug)
+                    ->withCookie(cookie($demoCookieName, (string) Str::uuid(), self::DEMO_COOKIE_LIFETIME))
+                    ->withCookie(cookie()->forget(self::COOKIE_NAME));
             }
+
+            $readerToken = $request->cookie($demoCookieName) ?? (string) Str::uuid();
         } else {
             $readerToken = $request->cookie(self::COOKIE_NAME) ?? (string) Str::uuid();
         }

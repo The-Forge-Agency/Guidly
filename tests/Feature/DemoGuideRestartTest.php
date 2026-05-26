@@ -58,7 +58,7 @@ test('completed bellecour guide shows restart button', function (): void {
     $response->assertSee('Recommencer le guide');
 });
 
-test('restart=1 gives a completely fresh guide even with existing cookie', function (): void {
+test('restart=1 redirects to clean URL with a new cookie', function (): void {
     $guide = createBellecourGuide();
 
     $this->get('/g/bellecour')->assertOk();
@@ -69,8 +69,8 @@ test('restart=1 gives a completely fresh guide even with existing cookie', funct
     $response = $this->withCookie('guidly_demo_bellecour', $session->reader_token)
         ->get('/g/bellecour?restart=1');
 
-    $response->assertOk();
-    $response->assertViewHas('completedStepIds', []);
+    $response->assertRedirect('/g/bellecour');
+    $response->assertCookie('guidly_demo_bellecour');
 });
 
 test('old guidly_reader cookie is ignored for bellecour', function (): void {
