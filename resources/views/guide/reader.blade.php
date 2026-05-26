@@ -19,7 +19,7 @@
 @section('content')
 <canvas id="confetti-canvas" class="fixed inset-0 z-[60] pointer-events-none" style="display:none;"></canvas>
 <div class="max-w-lg mx-auto px-4 flex flex-col min-h-[calc(100vh-57px)]" x-data="readerGuide()" x-cloak
-     x-init="$watch('isComplete', v => { if (v) setTimeout(launchConfetti, 100); })"
+     x-init="$watch('isComplete', v => { if (v) setTimeout(launchConfetti, 100); })">
 
     @if($isPreview ?? false)
         <div class="bg-warning/10 text-warning rounded-xl p-3 mt-4 text-sm text-center font-medium">
@@ -129,7 +129,7 @@
     </div>
 
     {{-- Completion / Recap --}}
-    <div x-show="isComplete"
+    <div x-show="isComplete" x-cloak
          x-transition:enter="transition ease-out duration-500"
          x-transition:enter-start="opacity-0 scale-95"
          x-transition:enter-end="opacity-100 scale-100"
