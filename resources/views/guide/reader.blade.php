@@ -228,36 +228,31 @@ function launchConfetti() {
     canvas.style.display = 'block';
     const confettiInstance = confetti.create(canvas, { resize: true, useWorker: true });
 
-    const duration = 3000;
-    const end = Date.now() + duration;
-
-    (function frame() {
-        confettiInstance({
-            particleCount: 3,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0, y: 0.6 },
-            colors: ['#2563EB', '#22C55E', '#F59E0B', '#EF4444', '#8B5CF6'],
-        });
-        confettiInstance({
-            particleCount: 3,
-            angle: 120,
-            spread: 55,
-            origin: { x: 1, y: 0.6 },
-            colors: ['#2563EB', '#22C55E', '#F59E0B', '#EF4444', '#8B5CF6'],
-        });
-
-        if (Date.now() < end) requestAnimationFrame(frame);
-    })();
+    confettiInstance({
+        particleCount: 80,
+        spread: 70,
+        origin: { x: 0.5, y: 0.3 },
+        colors: ['#2563EB', '#22C55E', '#F59E0B', '#EF4444', '#8B5CF6'],
+    });
 
     setTimeout(() => {
         confettiInstance({
-            particleCount: 100,
+            particleCount: 120,
             spread: 100,
-            origin: { y: 0.5 },
+            origin: { x: 0.5, y: 0.3 },
+            colors: ['#2563EB', '#22C55E', '#F59E0B', '#EF4444', '#8B5CF6'],
+            startVelocity: 35,
+        });
+    }, 250);
+
+    setTimeout(() => {
+        confettiInstance({
+            particleCount: 60,
+            spread: 120,
+            origin: { x: 0.5, y: 0.3 },
             colors: ['#2563EB', '#22C55E', '#F59E0B'],
         });
-    }, 400);
+    }, 500);
 
     setTimeout(() => { canvas.style.display = 'none'; }, 4000);
 }
