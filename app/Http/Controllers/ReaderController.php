@@ -22,7 +22,18 @@ class ReaderController extends Controller
         $guide = Guide::published()->where('slug', $slug)->firstOrFail();
         $guide->load('steps');
 
-        $readerToken = $request->cookie(self::COOKIE_NAME) ?? (string) Str::uuid();
+        $isDemo = $guide->slug === 'bellecour';
+
+        if ($isDemo) {
+            $sessionKey = "guidly_reader_{$guide->id}";
+            $readerToken = $request->session()->get($sessionKey);
+            if (! $readerToken) {
+                $readerToken = (string) Str::uuid();
+                $request->session()->put($sessionKey, $readerToken);
+            }
+        } else {
+            $readerToken = $request->cookie(self::COOKIE_NAME) ?? (string) Str::uuid();
+        }
 
         $session = GuideSession::firstOrCreate(
             ['guide_id' => $guide->id, 'reader_token' => $readerToken],
@@ -38,7 +49,7 @@ class ReaderController extends Controller
             'sessionId' => $session->id,
         ]);
 
-        if (! $request->cookie(self::COOKIE_NAME)) {
+        if (! $isDemo && ! $request->cookie(self::COOKIE_NAME)) {
             $response->withCookie(cookie(self::COOKIE_NAME, $readerToken, self::COOKIE_LIFETIME));
         }
 
@@ -50,7 +61,7 @@ class ReaderController extends Controller
         $guide = Guide::published()->where('slug', $slug)->firstOrFail();
         abort_if($step->guide_id !== $guide->id, 404);
 
-        $readerToken = $request->cookie(self::COOKIE_NAME);
+        $readerToken = $this->getReaderToken($request, $guide);
         if (! $readerToken) {
             return response()->json(['error' => 'Session non trouvée.'], 400);
         }
@@ -86,12 +97,22 @@ class ReaderController extends Controller
         ]);
     }
 
+    public function restart(Request $request, string $slug): Response
+    {
+        $guide = Guide::published()->where('slug', $slug)->firstOrFail();
+
+        $sessionKey = "guidly_reader_{$guide->id}";
+        $request->session()->forget($sessionKey);
+
+        return redirect()->route('reader.show', $slug);
+    }
+
     public function uploadAction(Request $request, string $slug, Step $step): JsonResponse
     {
         $guide = Guide::published()->where('slug', $slug)->firstOrFail();
         abort_if($step->guide_id !== $guide->id, 404);
 
-        $readerToken = $request->cookie(self::COOKIE_NAME);
+        $readerToken = $this->getReaderToken($request, $guide);
         if (! $readerToken) {
             return response()->json(['error' => 'Session non trouvée.'], 400);
         }
@@ -130,5 +151,14 @@ class ReaderController extends Controller
             'total_steps' => $totalSteps,
             'is_guide_complete' => $isGuideComplete,
         ]);
+    }
+
+    private function getReaderToken(Request $request, Guide $guide): ?string
+    {
+        if ($guide->slug === 'bellecour') {
+            return $request->session()->get("guidly_reader_{$guide->id}");
+        }
+
+        return $request->cookie(self::COOKIE_NAME);
     }
 }
