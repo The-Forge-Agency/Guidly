@@ -49,7 +49,10 @@ class ReaderController extends Controller
             'sessionId' => $session->id,
         ]);
 
-        if (! $isDemo && ! $request->cookie(self::COOKIE_NAME)) {
+        if ($isDemo) {
+            $response->withCookie(cookie()->forget(self::COOKIE_NAME));
+            $response->header('Cache-Control', 'no-store');
+        } elseif (! $request->cookie(self::COOKIE_NAME)) {
             $response->withCookie(cookie(self::COOKIE_NAME, $readerToken, self::COOKIE_LIFETIME));
         }
 
@@ -104,7 +107,9 @@ class ReaderController extends Controller
         $sessionKey = "guidly_reader_{$guide->id}";
         $request->session()->forget($sessionKey);
 
-        return redirect()->route('reader.show', $slug);
+        return redirect()->route('reader.show', $slug)
+            ->withCookie(cookie()->forget(self::COOKIE_NAME))
+            ->header('Cache-Control', 'no-store');
     }
 
     public function uploadAction(Request $request, string $slug, Step $step): JsonResponse
